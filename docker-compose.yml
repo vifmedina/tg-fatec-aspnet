@@ -3,8 +3,6 @@ services:
   dotnet:
     container_name: projeto_dotnet
     build: .
-    ports:
-      - "80:8080"
     networks:
       - tg
     volumes:
@@ -20,7 +18,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:./var/lib/mysql
+      - mysql_data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -36,9 +34,11 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     networks:
       - tg
+    depends_on:
+      - dotnet
 
 volumes:
   mysql_data:
