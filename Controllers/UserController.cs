@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using TG.DTOs;
 using TG.Models;
 using TG.Services;
 
 namespace TG.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users")]
 public class UserController : ControllerBase
 {
     private readonly UserService _userService;
@@ -40,10 +41,10 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult AddUser(User user)
+    public IActionResult AddUser([FromBody]CreateUserDTO user)
     {
-        _userService.AddUser(user);
-        return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
+        var createdUser = _userService.AddUser(user);
+        return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, createdUser);
     }
 
     [HttpPut("{id}")]

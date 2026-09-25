@@ -1,4 +1,5 @@
 using TG.Conf;
+using TG.DTOs;
 using TG.Models;
 namespace TG.Services;
 
@@ -13,20 +14,27 @@ public class UserService
 
     public IEnumerable<User> GetAllUsers()
     {
-        return _dbContext.Users.ToList();
+        return _dbContext.Users.Skip(0).Take(500).ToList();
     }
 
-    public User GetUserById(int id)
+    public User? GetUserById(int id)
     {
         return _dbContext.Users.FirstOrDefault(u => u.Id == id);
     }
 
-    public void AddUser(User user)
+    public User AddUser(CreateUserDTO user)
     {
-        user.Id = _dbContext.Users.Max(u => u.Id) + 1;
-        user.CreatedAt = DateTime.Now;
-        _dbContext.Users.Add(user);
+        var newUser = new User
+        {
+            Name = user.Name,
+            Age = user.Age,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+        var createdUser = _dbContext.Users.Add(newUser);
         _dbContext.SaveChanges();
+
+        return createdUser.Entity;
     }
 
     public void UpdateUser(User user)

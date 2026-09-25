@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TG.Conf;
+using TG.DTOs;
+using TG.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
             builder.Configuration.GetConnectionString("DefaultConnection")
         )
     ));
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<CreateUserDTO>();
 
 var app = builder.Build();
 
@@ -21,8 +25,6 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
-app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
