@@ -1,6 +1,7 @@
 using TG.Conf;
 using TG.DTOs;
 using TG.Models;
+using Microsoft.EntityFrameworkCore;
 namespace TG.Services;
 
 public class UserService
@@ -12,9 +13,9 @@ public class UserService
         _dbContext = dbContext;
     }
 
-    public IEnumerable<User> GetAllUsers()
+    public async Task<List<User>> GetAllUsers()
     {
-        return _dbContext.Users.Skip(0).Take(500).ToList();
+        return await _dbContext.Users.Take(100).ToListAsync();
     }
 
     public User? GetUserById(int id)
