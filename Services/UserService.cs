@@ -15,15 +15,17 @@ public class UserService
 
     public async Task<List<User>> GetAllUsers()
     {
-        return await _dbContext.Users.Take(100).ToListAsync();
+        return await _dbContext.Users
+        .AsNoTracking()
+        .ToListAsync();
     }
 
-    public User? GetUserById(int id)
+    public async Task<User?> GetUserById(int id)
     {
-        return _dbContext.Users.FirstOrDefault(u => u.Id == id);
+        return await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
     }
 
-    public User AddUser(CreateUserDTO user)
+    public async Task<User> AddUser(CreateUserDTO user)
     {
         var newUser = new User
         {
@@ -33,30 +35,30 @@ public class UserService
             CreatedAt = DateTime.UtcNow
         };
         var createdUser = _dbContext.Users.Add(newUser);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
         return createdUser.Entity;
     }
 
-    public void UpdateUser(User user)
+    public async Task UpdateUser(User user)
     {
-        var existingUser = GetUserById(user.Id);
+        var existingUser = await GetUserById(user.Id);
         if (existingUser != null)
         {
             existingUser.Name = user.Name;
             existingUser.Age = user.Age;
             existingUser.IsActive = user.IsActive;
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
     }
 
-    public void DeleteUser(int id)
+    public async Task DeleteUser(int id)
     {
-        var userToRemove = GetUserById(id);
+        var userToRemove = await GetUserById(id);
         if (userToRemove != null)
         {
             _dbContext.Users.Remove(userToRemove);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
     }
 }
