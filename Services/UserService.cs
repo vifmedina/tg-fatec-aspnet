@@ -17,12 +17,15 @@ public class UserService
     {
         return await _dbContext.Users
         .AsNoTracking()
+        .Take(1000)
         .ToListAsync();
     }
 
     public async Task<User?> GetUserById(int id)
     {
-        return await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+        return await _dbContext.Users
+        .AsNoTracking()
+        .FirstOrDefaultAsync(u => u.Id == id);
     }
 
     public async Task<User> AddUser(CreateUserDTO user)
@@ -34,31 +37,33 @@ public class UserService
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };
-        var createdUser = _dbContext.Users.Add(newUser);
+        _dbContext.Users.Add(newUser);
         await _dbContext.SaveChangesAsync();
 
-        return createdUser.Entity;
+        return newUser;
     }
 
-    public async Task UpdateUser(User user)
+    // Single UPDATE statement; fields left out of the body keep their current value.
+    // Returns false when no row matches the id
+    public async Task<bool> UpdateUser(int id, UpdateUserDTO user)
     {
-        var existingUser = await GetUserById(user.Id);
-        if (existingUser != null)
-        {
-            existingUser.Name = user.Name;
-            existingUser.Age = user.Age;
-            existingUser.IsActive = user.IsActive;
-            await _dbContext.SaveChangesAsync();
-        }
+        var affected = await _dbContext.Users
+        .Where(u => u.Id == id)
+        .ExecuteUpdateAsync(s => s
+            .SetProperty(u => u.Name, u => user.Name ?? u.Name)
+            .SetProperty(u => u.Age, u => user.Age ?? u.Age)
+            .SetProperty(u => u.IsActive, u => user.IsActive ?? u.IsActive));
+
+        return affected > 0;
     }
 
-    public async Task DeleteUser(int id)
+    // Single DELETE statement; returns false when no row matches the id
+    public async Task<bool> DeleteUser(int id)
     {
-        var userToRemove = await GetUserById(id);
-        if (userToRemove != null)
-        {
-            _dbContext.Users.Remove(userToRemove);
-            await _dbContext.SaveChangesAsync();
-        }
+        var affected = await _dbContext.Users
+        .Where(u => u.Id == id)
+        .ExecuteDeleteAsync();
+
+        return affected > 0;
     }
 }

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using TG.DTOs;
-using TG.Models;
 using TG.Services;
 
 namespace TG.Controllers;
@@ -21,12 +20,6 @@ public class UserController : ControllerBase
     public async Task<IActionResult> GetAllUsers()
     {
         var users = await _userService.GetAllUsers();
-
-        if (users == null || !users.Any())
-        {
-            return NotFound();
-        }
-
         return Ok(users);
     }
 
@@ -43,33 +36,31 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddUser([FromBody]CreateUserDTO user)
+    public async Task<IActionResult> AddUser([FromBody] CreateUserDTO user)
     {
         var createdUser = await _userService.AddUser(user);
         return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, createdUser);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUser(int id, User user)
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDTO user)
     {
-        if (id != user.Id)
+        if (!await _userService.UpdateUser(id, user))
         {
-            return BadRequest();
+            return NotFound();
         }
 
-        await _userService.UpdateUser(user);
-        return Ok(user);
+        return Ok(new { id, user.Name, user.Age, user.IsActive });
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(int id)
     {
-        var existingUser = await _userService.GetUserById(id);
-        if (existingUser == null)
+        if (!await _userService.DeleteUser(id))
         {
             return NotFound();
         }
-        await _userService.DeleteUser(id);
+
         return Ok();
     }
 }

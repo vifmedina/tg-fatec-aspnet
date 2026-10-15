@@ -17,7 +17,7 @@ export default () => {
   group("Post User", function () {
     const payload = JSON.stringify({
       name: "User" + Math.floor(Math.random() * 1000),
-      age: Math.floor(Math.random() * 100).toString(),
+      age: Math.floor(Math.random() * 100),
     });
     const params = {
       headers: {
